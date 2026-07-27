@@ -1,6 +1,13 @@
 import express from 'express';
 import salesController from '../controllers/salesController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import validateRequest from '../middleware/validateRequest.js';
+import {
+  createOrderSchema,
+  updateOrderSchema,
+  updateOrderStatusSchema,
+  recordPaymentSchema,
+} from '../validations/salesValidation.js';
 
 const router = express.Router();
 
@@ -9,8 +16,8 @@ router.use(authMiddleware);
 // Órdenes de venta
 router.get('/orders', salesController.getOrders);
 router.get('/orders/:id', salesController.getOrderById);
-router.post('/orders', salesController.createOrder);
-router.put('/orders/:id', salesController.updateOrder);
+router.post('/orders', validateRequest(createOrderSchema), salesController.createOrder);
+router.put('/orders/:id', validateRequest(updateOrderSchema), salesController.updateOrder);
 router.delete('/orders/:id', salesController.deleteOrder);
 
 // Facturación
@@ -20,10 +27,10 @@ router.post('/orders/:orderId/invoice', salesController.createInvoice);
 router.post('/invoices/:id/send', salesController.sendInvoice);
 
 // Estados de orden
-router.put('/orders/:id/status', salesController.updateOrderStatus);
+router.put('/orders/:id/status', validateRequest(updateOrderStatusSchema), salesController.updateOrderStatus);
 
 // Pagos
 router.get('/payments', salesController.getPayments);
-router.post('/invoices/:invoiceId/payment', salesController.recordPayment);
+router.post('/invoices/:invoiceId/payment', validateRequest(recordPaymentSchema), salesController.recordPayment);
 
 export default router;
